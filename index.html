@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game API Endpoints Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            color: #667eea;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .endpoint-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .endpoint-card {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .endpoint-card:hover {
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .endpoint-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .endpoint-url {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: #555;
+            word-break: break-all;
+            border: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+            flex-shrink: 0;
+            transition: background 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #5568d3;
+        }
+
+        .copy-btn:active {
+            transform: scale(0.95);
+        }
+
+        .key-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .key-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .key-value {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            color: #666;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .export-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-right: 10px;
+            transition: background 0.3s ease;
+        }
+
+        .export-btn:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Game API Endpoints Manager</h1>
+            <p>Manage your game backend configuration</p>
+        </div>
+
+        <div class="content">
+            <div class="key-card">
+                <div class="key-label">Master Encryption Key</div>
+                <div class="key-value">
+                    <span id="encKey">6g83zKNShmZcYE747WaLuKdzyMNspM4Y</span>
+                    <button class="copy-btn" onclick="copyToClipboard('encKey')">Copy</button>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <button class="export-btn" onclick="exportAsJSON()">📥 Export JSON</button>
+                <button class="export-btn" onclick="exportAsLua()">📥 Export Lua</button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('all', event)">All Endpoints</button>
+                <button class="tab" onclick="switchTab('auth', event)">Authentication</button>
+                <button class="tab" onclick="switchTab('static', event)">Static Resources</button>
+                <button class="tab" onclick="switchTab('purchases', event)">Purchases</button>
+            </div>
+
+            <div id="all" class="tab-content active">
+                <div class="section">
+                    <h2 class="section-title">Settings & Configuration</h2>
+                    <div class="endpoint-grid" id="settings"></div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">Authentication</h2>
+                    <div class="endpoint-grid" id="auth"></div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">Static Resources</h2>
+                    <div class="endpoint-grid" id="static"></div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">Purchases</h2>
+                    <div class="endpoint-grid" id="purchases"></div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">User Search</h2>
+                    <div class="endpoint-grid" id="search"></div>
+                </div>
+            </div>
+
+            <div id="auth-tab" class="tab-content"></div>
+            <div id="static-tab" class="tab-content"></div>
+            <div id="purchases-tab" class="tab-content"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script>
+        const endpoints = {
+            settings: [
+                { name: "MASTER_URL_SETTINGS", url: "https://test.static.tltgames.net/settings/client" },
+                { name: "MASTER_URL_SETTINGS2", url: "https://test.static.tltgames.net/settings/2.0/client" },
+                { name: "MASTER_URL_TIME", url: "https://test.static.tltgames.net/time" }
+            ],
+            auth: [
+                { name: "MASTER_AUTH_SAVE", url: "https://test.auth.tltgames.net/save_2.0" },
+                { name: "MASTER_AUTH_LOAD", url: "https://test.auth.tltgames.net/load_2.0" },
+                { name: "MASTER_AUTH_NAME", url: "https://test.auth.tltgames.net/name_2.0" },
+                { name: "MASTER_MAINTENANCE", url: "https://test.auth.tltgames.net/maintenance/status" }
+            ],
+            static: [
+                { name: "MASTER_PROMOCODE", url: "https://test.static.tltgames.net/promocode" },
+                { name: "MASTER_ACCESS", url: "https://test.static.tltgames.net/security/retrive/" },
+                { name: "LOAD_MAIL_LIST", url: "https://test.static.tltgames.net/post/list/UXNVELaUGuSXUN3u" },
+                { name: "TAKE_MAIL", url: "https://test.static.tltgames.net/post/get/UXNVELaUGuSXUN3u" },
+                { name: "REMOTE_RESOURCES_PATH", url: "https://test.static.tltgames.net/public/resources/" }
+            ],
+            purchases: [
+                { name: "PURCHASE_VALIDATE", url: "https://purchases.tltgames.net/purchases/validate" },
+                { name: "PURCHASE_HUAWEI_VALIDATE", url: "https://purchases.tltgames.net/purchases/validate_huawei" }
+            ],
+            search: [
+                { name: "MASTER_SEARCH_USER_ID", url: "https://test.auth.tltgames.net/search/id/" },
+                { name: "MASTER_SEARCH_USER_ACCOUNT", url: "https://test.auth.tltgames.net/search/account/" },
+                { name: "MASTER_SEARCH_USER_DEVICE", url: "https://test.auth.tltgames.net/search/device/" },
+                { name: "MASTER_SEARCH_USER_NAME", url: "https://test.auth.tltgames.net/search/name/" }
+            ]
+        };
+
+        function renderEndpoints() {
+            Object.keys(endpoints).forEach(category => {
+                const container = document.getElementById(category);
+                container.innerHTML = endpoints[category].map(ep => `
+                    <div class="endpoint-card">
+                        <div class="endpoint-name">${ep.name}</div>
+                        <div class="endpoint-url">
+                            <span id="${ep.name}">${ep.url}</span>
+                            <button class="copy-btn" onclick="copyToClipboard('${ep.name}')">Copy</button>
+                        </div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        function copyToClipboard(id) {
+            const text = document.getElementById(id).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast();
+            });
+        }
+
+        function showToast(message = 'Copied to clipboard!') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2000);
+        }
+
+        function switchTab(tab, event) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            if (event && event.target) {
+                event.target.classList.add('active');
+            } else {
+                document.querySelector(`.tab[onclick*="${tab}"]`).classList.add('active');
+            }
+
+            if (tab === 'all') {
+                document.getElementById('all').classList.add('active');
+                document.getElementById('auth-tab').classList.remove('active');
+                document.getElementById('static-tab').classList.remove('active');
+                document.getElementById('purchases-tab').classList.remove('active');
+            } else {
+                document.getElementById('all').classList.remove('active');
+                const tabContent = document.getElementById(`${tab}-tab`);
+                document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                tabContent.classList.add('active');
+                
+                const categoryMap = {
+                    'auth': ['auth', 'search'],
+                    'static': ['settings', 'static'],
+                    'purchases': ['purchases']
+                };
+                
+                tabContent.innerHTML = categoryMap[tab].map(cat => `
+                    <div class="section">
+                        <h2 class="section-title">${cat.charAt(0).toUpperCase() + cat.slice(1)}</h2>
+                        <div class="endpoint-grid">
+                            ${endpoints[cat].map(ep => `
+                                <div class="endpoint-card">
+                                    <div class="endpoint-name">${ep.name}</div>
+                                    <div class="endpoint-url">
+                                        <span id="${ep.name}-tab">${ep.url}</span>
+                                        <button class="copy-btn" onclick="copyToClipboard('${ep.name}-tab')">Copy</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function exportAsJSON() {
+            try {
+                const data = {
+                    MASTER_ENCRYPTION_KEY: "6g83zKNShmZcYE747WaLuKdzyMNspM4Y"
+                };
+                
+                Object.values(endpoints).flat().forEach(ep => {
+                    data[ep.name] = ep.url;
+                });
+                
+                const jsonString = JSON.stringify(data, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'game_endpoints.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('JSON exported successfully!');
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Export failed: ' + error.message);
+            }
+        }
+
+        function exportAsLua() {
+            try {
+                let lua = 'local L0_1, L1_1\n';
+                lua += 'L0_1 = "6g83zKNShmZcYE747WaLuKdzyMNspM4Y"\n';
+                lua += 'MASTER_ENCRYPTION_KEY = L0_1\n';
+                
+                Object.values(endpoints).flat().forEach(ep => {
+                    lua += `L0_1 = "${ep.url}"\n`;
+                    lua += `${ep.name} = L0_1\n`;
+                });
+                
+                const blob = new Blob([lua], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'game_endpoints.lua';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('Lua exported successfully!');
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Export failed: ' + error.message);
+            }
+        }
+
+        renderEndpoints();
+    </script>
+</body>
+</html>
